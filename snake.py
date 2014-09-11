@@ -11,12 +11,13 @@ import sys
 import tkinter as tk
 
 from enum import Enum, unique
+from random import randint
 
 
-_WIDTH = 800
-_HEIGHT = 600
+_WIDTH = 400
+_HEIGHT = 300
 _SIZE = 10
-_INTERVAL = 100
+_INTERVAL = 80
 
 
 @unique
@@ -44,19 +45,33 @@ class SnakeCanvas(tk.Canvas):
 
         width, height = _WIDTH // _SIZE, _HEIGHT // _SIZE
         self.snake = [[width - _SIZE, height], [width, height], [width + _SIZE, height]]
+        self.create_bit()
 
-        self.bind_all("<Key>", self.onKeyEvent)
-        self.after(_INTERVAL, self.onUpdate)
+        self.bind_all("<Key>", self.on_key_event)
+        self.after(_INTERVAL, self.on_update)
+
+    def create_bit(self):
+        while True:
+            new_bit = [randint(0, (_WIDTH // _SIZE) - _SIZE) * _SIZE,
+                       randint(0, (_HEIGHT // _SIZE) - _SIZE) * _SIZE]
+            if new_bit not in self.snake:
+                break
+        self.bit = new_bit
 
     def draw(self):
         self.delete("all")
+
+        self.create_rectangle(self.bit[0], self.bit[1],
+                              self.bit[0] + _SIZE, self.bit[1] + _SIZE,
+                              outline="#915a07", fill="#e88f0c")
 
         head = self.snake[0]
         self.create_rectangle(head[0], head[1], head[0] + _SIZE, head[1] + _SIZE,
                               outline="#000", fill="#a30000")
 
         for element in self.snake[1:]:
-            self.create_rectangle(element[0], element[1], element[0] + _SIZE, element[1] + _SIZE,
+            self.create_rectangle(element[0], element[1],
+                                  element[0] + _SIZE, element[1] + _SIZE,
                                   outline="#000", fill="#006610")
 
     def move(self):
@@ -71,16 +86,20 @@ class SnakeCanvas(tk.Canvas):
         if self.direction is Direction.DOWN:
             new_x, new_y = head[0], (head[1] + _SIZE) % _HEIGHT
 
-        self.snake = [[new_x, new_y]] + self.snake[:-1]
+        if self.bit == [new_x, new_y]:
+            self.snake = [[new_x, new_y]] + self.snake
+            self.create_bit()
+        else:
+            self.snake = [[new_x, new_y]] + self.snake[:-1]
 
-    def onUpdate(self):
+    def on_update(self):
         if self.running:
             self.move()
             self.draw()
 
-            self.after(_INTERVAL, self.onUpdate)
+            self.after(_INTERVAL, self.on_update)
 
-    def onKeyEvent(self, event):
+    def on_key_event(self, event):
         if event.keysym == 'Left' and self.direction is not Direction.RIGHT:
             self.direction = Direction.LEFT
 
@@ -99,7 +118,7 @@ class SnakeCanvas(tk.Canvas):
         if event.keysym == 'p':
             self.running = not self.running
             if self.running:
-                self.onUpdate()
+                self.on_update()
 
 
 class SnakeFrame(tk.Frame):
@@ -110,7 +129,7 @@ class SnakeFrame(tk.Frame):
         self.game = SnakeCanvas(master)
 
         self.pack()
-        master.title('snake_tk')
+        master.title('snake_tk by tammo')
 
 
 def main():
