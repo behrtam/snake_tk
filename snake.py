@@ -16,7 +16,7 @@ from enum import Enum, unique
 _WIDTH = 800
 _HEIGHT = 600
 _SIZE = 10
-_INTERVAL = 200
+_INTERVAL = 100
 
 
 @unique
@@ -92,6 +92,14 @@ class SnakeCanvas(tk.Canvas):
 
         if event.keysym == 'Down' and self.direction is not Direction.UP:
             self.direction = Direction.DOWN
+
+        if event.keysym == 'q':
+            self.master.destroy()
+
+        if event.keysym == 'p':
+            self.running = not self.running
+            if self.running:
+                self.onUpdate()
 
 
 class SnakeFrame(tk.Frame):
