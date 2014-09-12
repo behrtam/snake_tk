@@ -14,7 +14,7 @@ from enum import Enum, unique
 from random import randint
 
 
-_WIDTH = 800
+_WIDTH = 900
 _HEIGHT = 600
 _SIZE = 30
 _INTERVAL = 100
@@ -45,7 +45,7 @@ class SnakeCanvas(tk.Canvas):
         self.running = True
         self.game_over = False
 
-        width, height = _WIDTH // _SIZE, _HEIGHT // _SIZE
+        width, height = int((_WIDTH // _SIZE) / 2 * _SIZE), int((_HEIGHT // _SIZE) / 2 * _SIZE)
         self.snake = [[width - _SIZE, height], [width, height], [width + _SIZE, height]]
         self.create_bit()
 
@@ -57,7 +57,6 @@ class SnakeCanvas(tk.Canvas):
                        randint(0, (_HEIGHT // _SIZE) - 1) * _SIZE]
             if new_bit not in self.snake:
                 break
-        print(new_bit)
         self.bit = new_bit
 
     def draw(self):
@@ -91,12 +90,17 @@ class SnakeCanvas(tk.Canvas):
         if self.direction is Direction.DOWN:
             new_head = [head[0], (head[1] + _SIZE) % _HEIGHT]
 
+        # collision detection
         if new_head in self.snake:
             self.running = False
             self.game_over = True
+
+        # collecting the bit and grow the snake
         elif self.bit == new_head:
             self.snake = [new_head] + self.snake
             self.create_bit()
+
+        # just moving forward
         else:
             self.snake = [new_head] + self.snake[:-1]
 
@@ -145,6 +149,12 @@ class SnakeFrame(tk.Frame):
 
 def main():
     ''' The main entry point for this program. '''
+
+    if (_HEIGHT % _SIZE != 0) or (_WIDTH % _SIZE != 0):
+        print("error: The 'HEIGHT' and the 'WIDTH' neeed to be a multiple of the 'SIZE'!",
+              file=sys.stderr)
+        return 1
+
     root = tk.Tk()
     app = SnakeFrame(master=root)
     app.mainloop()
